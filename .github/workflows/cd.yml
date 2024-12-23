@@ -2,7 +2,7 @@ name: CD to Heroku
 
 on:
   push:
-    branches: ['main']  # Deploy on pushes to main branch
+    branches: ['main']
 
 jobs:
   build-and-deploy:
@@ -34,7 +34,7 @@ jobs:
 
       # 6. Log in to Heroku
       - name: Login to Heroku
-        run: heroku login --apikey ${{ secrets.HEROKU_API_KEY }}
+        run: echo "${{ secrets.HEROKU_API_KEY }}" | heroku login --with-token
 
       # 7. Create (or check) Heroku app
       - name: Create Heroku App
