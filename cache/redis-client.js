@@ -1,36 +1,53 @@
-
-const Redis = require("ioredis");
+const Redis = require('ioredis')
 
 const runTest = async (redis, prefix) => {
-  const key = `${prefix}:test:${new Date().getTime()}`;
-  await redis.set(key, "Redis Test Done.");
-  let data = await redis.get(key);
-  console.log(`Cache Test Data: ${data}`);
-  redis.del(key);
+  try {
+    const key = `${prefix}:test:${new Date().getTime()}`
+    await redis.set(key, 'Redis Test Done.')
+    await redis.get(key)
+    await redis.del(key)
+  } catch (error) {
+    console.error('Error during Redis test:', error)
+  }
 }
 
-const createClient = ({ prefix, url }) => {
+const createClient = ({
+  prefix = 'default',
+  url = 'redis://127.0.0.1:6379',
+  testConnection = true,
+}) => {
+  if (!prefix) throw new Error('Redis prefix is missing.')
+  if (!url) throw new Error('Redis URL is missing.')
 
   console.log({ prefix, url })
 
-  const redis = new Redis(url,{
-    keyPrefix: prefix+":"
-  });
+  const redis = new Redis(url, {
+    keyPrefix: prefix + ':',
+    connectTimeout: 10000, // 10 seconds
+  })
 
-  //register client events
+  // Register client events
   redis.on('error', (error) => {
-    console.log('error', error);
-  });
+    console.error('Redis error:', error)
+  })
 
   redis.on('end', () => {
-    console.log('shutting down service due to lost Redis connection');
-  });
+    console.error('Redis connection lost.')
+  })
 
-  runTest(redis, prefix);
+  // Optional connection test
+  if (testConnection) {
+    runTest(redis, prefix)
+  }
 
-  return redis;
+  // Graceful shutdown
+  process.on('SIGINT', () => {
+    redis.quit()
+    console.log('Redis client disconnected.')
+    process.exit(0)
+  })
+
+  return redis
 }
 
-
-
-exports.createClient = createClient;
+exports.createClient = createClient

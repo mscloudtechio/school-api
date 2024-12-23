@@ -1,12 +1,115 @@
-
-
 module.exports = {
-    createUser: [
-        {
-            model: 'username',
-            required: true,
-        },
-    ],
+  create: [
+    {
+      model: 'username',
+      path: 'username',
+      label: 'Username',
+      required: true,
+      type: 'string',
+      length: { min: 3, max: 50 },
+      message: 'Username must be between 3 and 50 characters.',
+    },
+    {
+      model: 'email',
+      path: 'email',
+      label: 'Email Address',
+      required: true,
+      type: 'string',
+      message: 'Please provide a valid email address.',
+    },
+    {
+      model: 'password',
+      path: 'password',
+      label: 'Password',
+      required: true,
+      type: 'string',
+      length: { min: 6 },
+      message: 'Password must be at least 6 characters long.',
+    },
+    {
+      model: 'role',
+      path: 'role',
+      label: 'User Role',
+      required: false,
+      type: 'string',
+      oneOf: ['superadmin', 'school_admin', 'student'],
+      message: 'Role must be one of: superadmin, school_admin, or student.',
+      default: 'student',
+    },
+    {
+      model: 'schoolId',
+      path: 'schoolId',
+      label: 'School ID',
+      type: 'string',
+      length: { min: 10, max: 100 },
+      message: 'School ID must be between 10 and 100 characters.',
+    },
+  ],
+
+  login: [
+    {
+      model: 'email',
+      path: 'email',
+      label: 'Email Address',
+      required: true,
+      type: 'string',
+      message: 'Please provide a valid email address.',
+    },
+    {
+      model: 'password',
+      path: 'password',
+      label: 'Password',
+      required: true,
+      type: 'string',
+      length: { min: 6 },
+      message: 'Password must be at least 6 characters long.',
+    },
+  ],
+
+  update: [
+    {
+      model: 'username',
+      path: 'username',
+      label: 'Username',
+      required: false,
+      type: 'string',
+      length: { min: 3, max: 50 },
+      message: 'Username must be between 3 and 50 characters.',
+    },
+    {
+      model: 'email',
+      path: 'email',
+      label: 'Email Address',
+      required: false,
+      type: 'string',
+      message: 'Please provide a valid email address.',
+    },
+    {
+      model: 'password',
+      path: 'password',
+      label: 'Password',
+      required: false,
+      type: 'string',
+      length: { min: 6 },
+      message: 'Password must be at least 6 characters long.',
+    },
+    {
+      model: 'role',
+      path: 'role',
+      label: 'User Role',
+      required: false,
+      type: 'string',
+      oneOf: ['superadmin', 'school_admin', 'student'],
+      message: 'Role must be one of: superadmin, school_admin, or student.',
+    },
+    {
+      model: 'schoolId',
+      path: 'schoolId',
+      label: 'School ID',
+      required: false,
+      type: 'string',
+      length: { min: 10, max: 100 },
+      message: 'School ID must be between 10 and 100 characters.',
+    },
+  ],
 }
-
-

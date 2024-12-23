@@ -1,0 +1,605 @@
+openapi: 3.0.0
+info:
+  title: School Management API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+paths:
+  /user:
+    post:
+      summary: Create a new user
+      description: |
+        **Allowed Role:** superadmin
+
+        Creates a new user with specified credentials (username, email, password, role, etc.).  
+        The code checks if the caller’s decoded JWT (short token) has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "jane_doe"
+                email:
+                  type: string
+                  format: email
+                  example: "jane.doe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "mypassword"
+                role:
+                  type: string
+                  enum: [superadmin, school_admin, student]
+                  example: "student"
+                schoolId:
+                  type: string
+                  example: "63fbc457abc123abc123f854"
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+
+  /user/login:
+    post:
+      summary: User login
+      description: |
+        **No Role Check** (Open to all)
+
+        Authenticates a user and returns a token if valid.  
+        The response typically includes a JWT token in the body or headers.  
+        Once the token is received, the client can include it in the `Token` header  
+        (e.g., `Token: <token>`) for subsequent requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "jane.doe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "mypassword"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: User authenticated
+        '401':
+          description: Invalid credentials
+        '404':
+          description: User not found
+
+  /user/update:
+    put:
+      summary: Update a user by ID
+      description: |
+        **Allowed Role:** superadmin
+
+        Updates an existing user's information.  
+        The code checks if the caller’s decoded JWT (short token) has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The ID of the user to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: object
+                  example:
+                    password: "newPassword123"
+                    role: "school_admin"
+              required:
+                - updates
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: User not found
+
+  /school:
+    post:
+      summary: Create a new school
+      description: |
+        **Allowed Role:** superadmin
+
+        Creates a new school with the specified name and address.  
+        The code checks if the caller’s decoded JWT has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Green Valley High"
+                address:
+                  type: string
+                  example: "123 Main St, Springfield"
+              required:
+                - name
+                - address
+      responses:
+        '201':
+          description: School created successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+
+    get:
+      summary: Get a school by ID
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves a school using the provided `schoolId`.  
+        In code, no role restriction is enforced (though you might still require a valid token for usage).
+      parameters:
+        - in: query
+          name: schoolId
+          required: true
+          schema:
+            type: string
+          description: The ID of the school to retrieve.
+      responses:
+        '200':
+          description: Successfully retrieved the school
+        '404':
+          description: School not found
+
+    put:
+      summary: Update a school by ID
+      description: |
+        **Allowed Role:** superadmin
+
+        Updates a school's details (e.g., `name`, `address`).  
+        The code checks if the caller’s decoded JWT has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: schoolId
+          required: true
+          schema:
+            type: string
+          description: The ID of the school to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: object
+                  example:
+                    name: "Updated School Name"
+                    address: "456 Park Ave"
+              required:
+                - updates
+      responses:
+        '200':
+          description: School updated successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Only superadmins can update schools
+        '404':
+          description: School not found
+
+    delete:
+      summary: Delete a school by ID
+      description: |
+        **Allowed Role:** superadmin
+
+        Deletes a school using the provided `schoolId`.  
+        The code checks if the caller’s decoded JWT has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: schoolId
+          required: true
+          schema:
+            type: string
+          description: The ID of the school to delete.
+      responses:
+        '200':
+          description: School deleted successfully
+        '403':
+          description: Forbidden Only superadmins can delete schools
+        '404':
+          description: School not found
+
+  /school/list:
+    get:
+      summary: List all schools
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves a list of all available schools.
+      responses:
+        '200':
+          description: An array of school objects
+
+  /school/assignSchoolAdmin:
+    post:
+      summary: Assign a School Admin
+      description: |
+        **Allowed Role:** superadmin
+
+        Assigns an existing user (with `role = school_admin`) to a specified school.  
+        The code checks if the caller’s decoded JWT has `role === 'superadmin'`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schoolId:
+                  type: string
+                  example: "63fbc457abc123abc123f854"
+                adminId:
+                  type: string
+                  example: "63fbcd89123fabcabc987654"
+              required:
+                - schoolId
+                - adminId
+      responses:
+        '200':
+          description: Admin assigned to school successfully
+        '400':
+          description: Invalid school_admin ID or role
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: School not found
+
+  /classroom:
+    post:
+      summary: Create a new classroom
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Creates a new classroom in a specified school.  
+        (Not shown in the code snippet above, but consistent with the pattern.)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schoolId:
+                  type: string
+                  example: "63fbc457abc123abc123f854"
+                name:
+                  type: string
+                  example: "Room 101"
+                capacity:
+                  type: integer
+                  example: 30
+                resources:
+                  type: object
+                  example:
+                    hasProjector: true
+                    chairs: 30
+              required:
+                - schoolId
+                - name
+                - capacity
+      responses:
+        '201':
+          description: Classroom created successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+
+    get:
+      summary: Get a classroom by ID
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves a classroom using the provided `classroomId`.
+      parameters:
+        - in: query
+          name: classroomId
+          required: true
+          schema:
+            type: string
+          description: The ID of the classroom to retrieve.
+      responses:
+        '200':
+          description: Successfully retrieved the classroom
+        '404':
+          description: Classroom not found
+
+    put:
+      summary: Update a classroom by ID
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Updates a classroom's details (e.g., `name`, `capacity`, `resources`).
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: classroomId
+          required: true
+          schema:
+            type: string
+          description: The ID of the classroom to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: object
+                  example:
+                    name: "Updated Classroom Name"
+                    capacity: 35
+                    resources:
+                      hasProjector: false
+              required:
+                - updates
+      responses:
+        '200':
+          description: Classroom updated successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: Classroom not found
+
+    delete:
+      summary: Delete a classroom by ID
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Deletes a classroom using the provided `classroomId`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: classroomId
+          required: true
+          schema:
+            type: string
+          description: The ID of the classroom to delete.
+      responses:
+        '200':
+          description: Classroom deleted successfully
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: Classroom not found
+
+  /classroom/list:
+    get:
+      summary: List all classrooms for a school
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves all classrooms belonging to a specific school.
+      parameters:
+        - in: query
+          name: schoolId
+          required: true
+          schema:
+            type: string
+          description: The ID of the school to retrieve classrooms from.
+      responses:
+        '200':
+          description: An array of classroom objects
+
+  /student:
+    post:
+      summary: Create a student record
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Creates a new student in a specific classroom/school.  
+        The code checks if the caller’s decoded JWT has `role` in `[superadmin, school_admin]`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schoolId:
+                  type: string
+                  example: "63fbc457abc123abc123f854"
+                classId:
+                  type: string
+                  example: "63fbc789abc789abc789f456"
+                name:
+                  type: string
+                  example: "John Doe"
+                age:
+                  type: integer
+                  example: 15
+                grade:
+                  type: string
+                  example: "10th"
+                profile:
+                  type: object
+                  example:
+                    interests: ["Math", "Science"]
+                    notes: "Excelled in middle school"
+              required:
+                - schoolId
+                - classId
+                - name
+                - age
+                - grade
+      responses:
+        '201':
+          description: Student record created successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: School/Classroom not found
+
+    put:
+      summary: Update a student by ID
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Updates a student's information.  
+        The code checks if the caller’s decoded JWT has `role` in `[superadmin, school_admin]`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: studentId
+          required: true
+          schema:
+            type: string
+          description: The ID of the student to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: object
+                  example:
+                    name: "Updated Student Name"
+                    grade: "11th"
+                    profile:
+                      interests: ["Art", "Music"]
+              required:
+                - updates
+      responses:
+        '200':
+          description: Student updated successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: Student not found
+
+    delete:
+      summary: Delete a student by ID
+      description: |
+        **Allowed Roles:** superadmin, school_admin
+
+        Deletes a student using the provided `studentId`.  
+        The code checks if the caller’s decoded JWT has `role` in `[superadmin, school_admin]`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: studentId
+          required: true
+          schema:
+            type: string
+          description: The ID of the student to delete.
+      responses:
+        '200':
+          description: Student deleted successfully
+        '403':
+          description: Forbidden Invalid role
+        '404':
+          description: Student not found
+
+    get:
+      summary: Get a student by ID
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves a student using the provided `studentId`.
+      parameters:
+        - in: query
+          name: studentId
+          required: true
+          schema:
+            type: string
+          description: The ID of the student to retrieve.
+      responses:
+        '200':
+          description: Successfully retrieved the student
+        '404':
+          description: Student not found
+
+  /student/list:
+    get:
+      summary: List all students for a school
+      description: |
+        **No Role Check** (Open)
+
+        Retrieves all students in a specified school.
+      parameters:
+        - in: query
+          name: schoolId
+          required: true
+          schema:
+            type: string
+          description: The ID of the school to retrieve students from.
+      responses:
+        '200':
+          description: An array of student objects
