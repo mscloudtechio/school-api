@@ -1,12 +1,14 @@
 const School = require('./school.model')
 const User = require('../user/user.model')
+const { nanoid } = require('nanoid')
 
 module.exports = class SchoolManager {
-  constructor({ cache, utils, managers }) {
+  constructor({ cache, utils, validators, managers }) {
     this.cache = cache
     this.utils = utils
     this.prefix = 'school'
     this.managers = managers
+    this.validators = validators
     this.httpExposed = [
       'post=create',
       'get=get',
@@ -21,6 +23,15 @@ module.exports = class SchoolManager {
    * Creates a new school and stores it in the database.
    */
   async create({ __shortToken, name, address, res }) {
+    const id = nanoid()
+    const schoolData = { id, name, address }
+    await this.validators.school.create(schoolData).catch((err) => {
+      return this.managers.responseDispatcher.dispatch(res, {
+        ok: false,
+        code: 400,
+        errors: err,
+      })
+    })
     try {
       const superAdminId = __shortToken.userId
       const superAdmin = await User.findOne({
@@ -36,7 +47,6 @@ module.exports = class SchoolManager {
         })
       }
 
-      const schoolData = { name, address }
       const newSchool = new School(schoolData)
       await newSchool.save()
 
@@ -49,7 +59,7 @@ module.exports = class SchoolManager {
       return this.managers.responseDispatcher.dispatch(res, {
         ok: false,
         code: 500,
-        errors: 'Internal server error',
+        errors: err.message,
       })
     }
   }

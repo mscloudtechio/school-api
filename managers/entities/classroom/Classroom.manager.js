@@ -25,12 +25,14 @@ module.exports = class ClassroomManager {
     try {
       // Validate input
       const classroomData = { schoolId, name, capacity, resources }
-      const validationResult = await this.validators.classroom.create(
-        classroomData
-      )
-      if (validationResult) return validationResult
+      await this.validators.classroom.create(classroomData).catch((err) => {
+        return this.managers.responseDispatcher.dispatch(res, {
+          ok: false,
+          code: 400,
+          errors: err,
+        })
+      })
 
-      // Role validation
       const userId = __shortToken.userId
       const user = await User.findById(userId)
       if (!user || !['superadmin', 'school_admin'].includes(user.role)) {
@@ -80,18 +82,19 @@ module.exports = class ClassroomManager {
    * Retrieves a classroom by its ID.
    */
   async get({ classroomId, res }) {
-    try {
-      const validationResult = await this.validators.classroom.get({
+    await this.validators.classroom
+      .get({
         classroomId,
       })
-      if (validationResult) {
+      .catch((err) => {
         return this.managers.responseDispatcher.dispatch(res, {
           ok: false,
           code: 400,
-          errors: validationResult,
+          errors: err,
         })
-      }
+      })
 
+    try {
       const classroom = await Classroom.findById(classroomId).populate(
         'schoolId'
       )
@@ -122,11 +125,15 @@ module.exports = class ClassroomManager {
    * Updates an existing classroom.
    */
   async update({ __shortToken, classroomId, updates, res }) {
+    // Validate updates
+    await this.validators.classroom.update(updates).catch((err) => {
+      return this.managers.responseDispatcher.dispatch(res, {
+        ok: false,
+        code: 400,
+        errors: err,
+      })
+    })
     try {
-      // Validate updates
-      const validationResult = await this.validators.classroom.update(updates)
-      if (validationResult) return validationResult
-
       const userId = __shortToken.userId
       const user = await User.findById(userId)
       if (!user || !['superadmin', 'school_admin'].includes(user.role)) {
@@ -223,12 +230,18 @@ module.exports = class ClassroomManager {
    * Lists all classrooms for a specific school.
    */
   async list({ schoolId, res }) {
-    try {
-      const validationResult = await this.validators.classroom.list({
+    await this.validators.classroom
+      .list({
         schoolId,
       })
-      if (validationResult) return validationResult
-
+      .catch((err) => {
+        return this.managers.responseDispatcher.dispatch(res, {
+          ok: false,
+          code: 400,
+          errors: err,
+        })
+      })
+    try {
       const classrooms = await Classroom.find({ schoolId })
       return this.managers.responseDispatcher.dispatch(res, {
         ok: true,

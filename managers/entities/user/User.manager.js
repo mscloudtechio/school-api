@@ -2,8 +2,6 @@ const UserModel = require('./user.model')
 
 module.exports = class User {
   constructor({
-    utils,
-    cache,
     config,
     cortex,
     managers,
@@ -21,8 +19,6 @@ module.exports = class User {
   }
 
   /**
-   * Creates a new user (restricted to superadmins only).
-   * @param {object} __shortToken - Decoded short token for role validation.
    * @param {string} username - The username of the new user.
    * @param {string} email - The email of the new user.
    * @param {string} password - The password of the new user.
@@ -32,7 +28,7 @@ module.exports = class User {
    * @returns {Promise<object>} - The created user and their token.
    */
   async create({
-    __shortToken,
+    // __shortToken,
     username,
     email,
     password,
@@ -40,27 +36,26 @@ module.exports = class User {
     schoolId,
     res,
   }) {
-    const adminId = __shortToken.userId
-    const admin = await User.findById(adminId)
+    // const adminId = __shortToken.userId
+    // const admin = await User.findById(adminId)
 
-    if (!admin || admin.role !== 'superadmin') {
-      return this.managers.responseDispatcher.dispatch(res, {
-        ok: false,
-        code: 403,
-        errors: 'Forbidden: Invalid role',
-      })
-    }
+    // if (!admin || admin.role !== 'superadmin') {
+    //   return this.managers.responseDispatcher.dispatch(res, {
+    //     ok: false,
+    //     code: 403,
+    //     errors: 'Forbidden: Invalid role',
+    //   })
+    // }
 
-    const user = { username, email, password, role, school: schoolId }
+    const user = { username, email, password, role, schoolId: schoolId }
 
-    const result = await this.validators.user.create(user)
-    if (result) {
+    await this.validators.user.create(user).catch((err) => {
       return this.responseDispatcher.dispatch(res, {
         ok: false,
         code: 400,
-        errors: result,
+        errors: err,
       })
-    }
+    })
 
     try {
       const newUser = new UserModel(user)
@@ -69,8 +64,6 @@ module.exports = class User {
       const longToken = this.tokenManager.genLongToken({
         userId: newUser._id,
         userKey: newUser.key,
-        role: newUser.role,
-        schoolId: newUser.school,
       })
 
       return this.responseDispatcher.dispatch(res, {
@@ -96,6 +89,13 @@ module.exports = class User {
    * @returns {Promise<object>} - The updated user data.
    */
   async update({ __shortToken, userId, updates, res }) {
+    await this.validators.user.update(updates).catch((err) => {
+      return this.managers.responseDispatcher.dispatch(res, {
+        ok: false,
+        code: 400,
+        errors: err,
+      })
+    })
     const adminId = __shortToken.userId
     const admin = await User.findById(adminId)
 
@@ -106,9 +106,6 @@ module.exports = class User {
         errors: 'Forbidden: Invalid role',
       })
     }
-
-    const result = await this.validators.user.update(updates)
-    if (result) return result
 
     try {
       const existingUser = await UserModel.findById(userId)

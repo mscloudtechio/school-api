@@ -30,28 +30,6 @@ module.exports = ({ meta, config, managers }) => {
       })
     }
 
-    if (!decoded.role) {
-      console.log('Role not found in token')
-      return managers.responseDispatcher.dispatch(res, {
-        ok: false,
-        code: 403,
-        errors: 'Forbidden: Role not specified',
-      })
-    }
-
-    if (
-      decoded.role === 'superadmin' ||
-      decoded.role === 'school_admin' ||
-      decoded.role === 'student'
-    ) {
-      next(decoded)
-    } else {
-      console.log('Invalid role in token')
-      return managers.responseDispatcher.dispatch(res, {
-        ok: false,
-        code: 403,
-        errors: 'Forbidden: Invalid role',
-      })
-    }
+    next(decoded)
   }
 }

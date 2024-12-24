@@ -15,13 +15,11 @@ module.exports = class TokenManager {
    * Long tokens represent a user.
    * They contain immutable data and are long-lived.
    */
-  genLongToken({ userId, userKey, role, schoolId }) {
+  genLongToken({ userId, userKey}) {
     return jwt.sign(
       {
         userKey,
         userId,
-        role,
-        schoolId,
       },
       this.config.dotEnv.LONG_TOKEN_SECRET,
       { expiresIn: this.longTokenExpiresIn }
@@ -32,9 +30,9 @@ module.exports = class TokenManager {
    * Short tokens are issued from long tokens.
    * They represent a device and include the user role.
    */
-  genShortToken({ userId, userKey, sessionId, deviceId, role, schoolId }) {
+  genShortToken({ userId, userKey, sessionId, deviceId }) {
     return jwt.sign(
-      { userKey, userId, sessionId, deviceId, role, schoolId },
+      { userKey, userId, sessionId, deviceId },
       this.config.dotEnv.SHORT_TOKEN_SECRET,
       { expiresIn: this.shortTokenExpiresIn }
     )
@@ -77,8 +75,6 @@ module.exports = class TokenManager {
       userKey: decoded.userKey,
       sessionId: nanoid(),
       deviceId: md5(__device),
-      role: decoded.role,
-      schoolId: decoded.schoolId,
     })
 
     return { shortToken }

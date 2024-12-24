@@ -1,37 +1,9 @@
-module.exports = {
-  createSchool: [
-    {
-      model: 'name',
-      path: 'name',
-      required: true,
-      type: 'string',
-      minLength: 3,
-      maxLength: 100,
-    },
-    {
-      model: 'address',
-      path: 'address',
-      required: true,
-      type: 'string',
-      minLength: 10,
-      maxLength: 200,
-    },
-  ],
+const Joi = require('joi')
 
-  updateSchool: [
-    {
-      model: 'name',
-      required: false,
-      type: 'string',
-      minLength: 3,
-      maxLength: 100,
-    },
-    {
-      model: 'address',
-      required: false,
-      type: 'string',
-      minLength: 10,
-      maxLength: 200,
-    },
-  ],
+module.exports = {
+  create: Joi.object({
+    id: Joi.string().min(3).max(100).required(),
+    name: Joi.string().min(3).max(100).required(),
+    address: Joi.string().min(10).max(200).required(),
+  }),
 }

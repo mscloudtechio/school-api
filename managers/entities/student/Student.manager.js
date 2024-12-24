@@ -32,15 +32,16 @@ module.exports = class StudentManager {
     profile,
     res,
   }) {
-    try {
-      // Validate input
-      const studentData = { schoolId, classId, name, age, grade, profile }
-      const validationResult = await this.validators.student.create(studentData)
-      if (validationResult) {
-        return validationResult
-      }
+    const studentData = { schoolId, classId, name, age, grade, profile }
+    await this.validators.student.create(studentData).catch((err) => {
+      return this.managers.responseDispatcher.dispatch(res, {
+        ok: false,
+        code: 400,
+        errors: err,
+      })
+    })
 
-      // Role validation
+    try {
       const userId = __shortToken.userId
       const user = await User.findById(userId)
       if (!user || !['superadmin', 'school_admin'].includes(user.role)) {
@@ -100,18 +101,15 @@ module.exports = class StudentManager {
    * Updates a student's information.
    */
   async update({ __shortToken, studentId, updates, res }) {
-    try {
-      // Validate updates
-      const validationResult = await this.validators.student.update(updates)
-      if (validationResult) {
-        return this.managers.responseDispatcher.dispatch(res, {
-          ok: false,
-          code: 400,
-          errors: validationResult,
-        })
-      }
+    await this.validators.student.update(updates).catch((err) => {
+      return this.managers.responseDispatcher.dispatch(res, {
+        ok: false,
+        code: 400,
+        errors: err,
+      })
+    })
 
-      // Role validation
+    try {
       const userId = __shortToken.userId
       const user = await User.findById(userId)
 

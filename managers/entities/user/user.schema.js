@@ -1,115 +1,88 @@
+const Joi = require('joi')
+
 module.exports = {
-  create: [
-    {
-      model: 'username',
-      path: 'username',
-      label: 'Username',
-      required: true,
-      type: 'string',
-      length: { min: 3, max: 50 },
-      message: 'Username must be between 3 and 50 characters.',
-    },
-    {
-      model: 'email',
-      path: 'email',
-      label: 'Email Address',
-      required: true,
-      type: 'string',
-      message: 'Please provide a valid email address.',
-    },
-    {
-      model: 'password',
-      path: 'password',
-      label: 'Password',
-      required: true,
-      type: 'string',
-      length: { min: 6 },
-      message: 'Password must be at least 6 characters long.',
-    },
-    {
-      model: 'role',
-      path: 'role',
-      label: 'User Role',
-      required: false,
-      type: 'string',
-      oneOf: ['superadmin', 'school_admin', 'student'],
-      message: 'Role must be one of: superadmin, school_admin, or student.',
-      default: 'student',
-    },
-    {
-      model: 'schoolId',
-      path: 'schoolId',
-      label: 'School ID',
-      type: 'string',
-      length: { min: 10, max: 100 },
-      message: 'School ID must be between 10 and 100 characters.',
-    },
-  ],
+  create: Joi.object({
+    username: Joi.string()
+      .min(3)
+      .max(50)
+      .required()
+      .label('Username')
+      .messages({
+        'string.min': 'Username must be between 3 and 50 characters.',
+        'string.max': 'Username must be between 3 and 50 characters.',
+        'any.required': 'Username is required.',
+      }),
+    email: Joi.string().email().required().label('Email Address').messages({
+      'string.email': 'Please provide a valid email address.',
+      'any.required': 'Email Address is required.',
+    }),
+    password: Joi.string().min(6).required().label('Password').messages({
+      'string.min': 'Password must be at least 6 characters long.',
+      'any.required': 'Password is required.',
+    }),
+    role: Joi.string()
+      .valid('superadmin', 'school_admin', 'student')
+      .default('student')
+      .optional()
+      .label('User Role')
+      .messages({
+        'any.only':
+          'Role must be one of: superadmin, school_admin, or student.',
+      }),
+    schoolId: Joi.string()
+      .min(10)
+      .max(100)
+      .optional()
+      .label('School ID')
+      .messages({
+        'string.min': 'School ID must be between 10 and 100 characters.',
+        'string.max': 'School ID must be between 10 and 100 characters.',
+      }),
+  }),
 
-  login: [
-    {
-      model: 'email',
-      path: 'email',
-      label: 'Email Address',
-      required: true,
-      type: 'string',
-      message: 'Please provide a valid email address.',
-    },
-    {
-      model: 'password',
-      path: 'password',
-      label: 'Password',
-      required: true,
-      type: 'string',
-      length: { min: 6 },
-      message: 'Password must be at least 6 characters long.',
-    },
-  ],
+  login: Joi.object({
+    email: Joi.string().email().required().label('Email Address').messages({
+      'string.email': 'Please provide a valid email address.',
+      'any.required': 'Email Address is required.',
+    }),
+    password: Joi.string().min(6).required().label('Password').messages({
+      'string.min': 'Password must be at least 6 characters long.',
+      'any.required': 'Password is required.',
+    }),
+  }),
 
-  update: [
-    {
-      model: 'username',
-      path: 'username',
-      label: 'Username',
-      required: false,
-      type: 'string',
-      length: { min: 3, max: 50 },
-      message: 'Username must be between 3 and 50 characters.',
-    },
-    {
-      model: 'email',
-      path: 'email',
-      label: 'Email Address',
-      required: false,
-      type: 'string',
-      message: 'Please provide a valid email address.',
-    },
-    {
-      model: 'password',
-      path: 'password',
-      label: 'Password',
-      required: false,
-      type: 'string',
-      length: { min: 6 },
-      message: 'Password must be at least 6 characters long.',
-    },
-    {
-      model: 'role',
-      path: 'role',
-      label: 'User Role',
-      required: false,
-      type: 'string',
-      oneOf: ['superadmin', 'school_admin', 'student'],
-      message: 'Role must be one of: superadmin, school_admin, or student.',
-    },
-    {
-      model: 'schoolId',
-      path: 'schoolId',
-      label: 'School ID',
-      required: false,
-      type: 'string',
-      length: { min: 10, max: 100 },
-      message: 'School ID must be between 10 and 100 characters.',
-    },
-  ],
+  update: Joi.object({
+    username: Joi.string()
+      .min(3)
+      .max(50)
+      .optional()
+      .label('Username')
+      .messages({
+        'string.min': 'Username must be between 3 and 50 characters.',
+        'string.max': 'Username must be between 3 and 50 characters.',
+      }),
+    email: Joi.string().email().optional().label('Email Address').messages({
+      'string.email': 'Please provide a valid email address.',
+    }),
+    password: Joi.string().min(6).optional().label('Password').messages({
+      'string.min': 'Password must be at least 6 characters long.',
+    }),
+    role: Joi.string()
+      .valid('superadmin', 'school_admin', 'student')
+      .optional()
+      .label('User Role')
+      .messages({
+        'any.only':
+          'Role must be one of: superadmin, school_admin, or student.',
+      }),
+    schoolId: Joi.string()
+      .min(10)
+      .max(100)
+      .optional()
+      .label('School ID')
+      .messages({
+        'string.min': 'School ID must be between 10 and 100 characters.',
+        'string.max': 'School ID must be between 10 and 100 characters.',
+      }),
+  }),
 }

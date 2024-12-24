@@ -1,105 +1,85 @@
+const Joi = require('joi')
+
 module.exports = {
-  create: [
-    {
-      model: 'name',
-      required: true,
-      type: 'string',
-      label: 'Student Name',
-      minLength: 3,
-      maxLength: 50,
-      message: 'Name must be between 3 and 50 characters.',
-    },
-    {
-      model: 'age',
-      required: true,
-      type: 'number',
-      label: 'Student Age',
-      min: 5,
-      max: 100,
-      message: 'Age must be between 5 and 100 years.',
-    },
-    {
-      model: 'grade',
-      required: true,
-      type: 'string',
-      label: 'Grade',
-      minLength: 1,
-      maxLength: 10,
-      message: 'Grade must be between 1 and 10 characters.',
-    },
-    {
-      model: 'schoolId',
-      required: true,
-      type: 'string',
-      label: 'School ID',
-      minLength: 10,
-      maxLength: 100,
-      message: 'School ID must be valid.',
-    },
-    {
-      model: 'classId',
-      required: true,
-      type: 'string',
-      label: 'Classroom ID',
-      minLength: 10,
-      maxLength: 100,
-      message: 'Classroom ID must be valid.',
-    },
-    {
-      model: 'profile',
-      required: false,
-      type: 'object',
-      label: 'Student Profile',
-      message: 'Profile must be a valid JSON object.',
-    },
-  ],
+  create: Joi.object({
+    name: Joi.string()
+      .min(3)
+      .max(50)
+      .required()
+      .label('Student Name')
+      .messages({
+        'string.min': 'Name must be between 3 and 50 characters.',
+        'string.max': 'Name must be between 3 and 50 characters.',
+        'any.required': 'Name is required.',
+      }),
+    age: Joi.number().min(5).max(100).required().label('Student Age').messages({
+      'number.min': 'Age must be between 5 and 100 years.',
+      'number.max': 'Age must be between 5 and 100 years.',
+      'any.required': 'Age is required.',
+    }),
+    grade: Joi.string().min(1).max(10).required().label('Grade').messages({
+      'string.min': 'Grade must be between 1 and 10 characters.',
+      'string.max': 'Grade must be between 1 and 10 characters.',
+      'any.required': 'Grade is required.',
+    }),
+    schoolId: Joi.string()
+      .min(10)
+      .max(100)
+      .required()
+      .label('School ID')
+      .messages({
+        'string.min': 'School ID must be valid.',
+        'string.max': 'School ID must be valid.',
+        'any.required': 'School ID is required.',
+      }),
+    classId: Joi.string()
+      .min(10)
+      .max(100)
+      .required()
+      .label('Classroom ID')
+      .messages({
+        'string.min': 'Classroom ID must be valid.',
+        'string.max': 'Classroom ID must be valid.',
+        'any.required': 'Classroom ID is required.',
+      }),
+    profile: Joi.object().optional().label('Student Profile').messages({
+      'object.base': 'Profile must be a valid JSON object.',
+    }),
+  }),
 
-  update: [
-    {
-      model: 'name',
-      required: false,
-      type: 'string',
-      label: 'Student Name',
-      minLength: 3,
-      maxLength: 50,
-      message: 'Name must be between 3 and 50 characters.',
-    },
-    {
-      model: 'age',
-      required: false,
-      type: 'number',
-      label: 'Student Age',
-      min: 5,
-      max: 100,
-      message: 'Age must be between 5 and 100 years.',
-    },
-    {
-      model: 'grade',
-      required: false,
-      type: 'string',
-      label: 'Grade',
-      minLength: 1,
-      maxLength: 10,
-      message: 'Grade must be between 1 and 10 characters.',
-    },
-    {
-      model: 'profile',
-      required: false,
-      type: 'object',
-      label: 'Student Profile',
-      message: 'Profile must be a valid JSON object.',
-    },
-  ],
+  update: Joi.object({
+    name: Joi.string()
+      .min(3)
+      .max(50)
+      .optional()
+      .label('Student Name')
+      .messages({
+        'string.min': 'Name must be between 3 and 50 characters.',
+        'string.max': 'Name must be between 3 and 50 characters.',
+      }),
+    age: Joi.number().min(5).max(100).optional().label('Student Age').messages({
+      'number.min': 'Age must be between 5 and 100 years.',
+      'number.max': 'Age must be between 5 and 100 years.',
+    }),
+    grade: Joi.string().min(1).max(10).optional().label('Grade').messages({
+      'string.min': 'Grade must be between 1 and 10 characters.',
+      'string.max': 'Grade must be between 1 and 10 characters.',
+    }),
+    profile: Joi.object().optional().label('Student Profile').messages({
+      'object.base': 'Profile must be a valid JSON object.',
+    }),
+  }),
 
-  delete: [
-    {
-      model: 'studentId',
-      required: true,
-      type: 'string',
-      label: 'Student ID',
-      minLength: 10,
-      maxLength: 100,
-      message: 'Student ID must be valid.',
-    },
-  ],
+  delete: Joi.object({
+    studentId: Joi.string()
+      .min(10)
+      .max(100)
+      .required()
+      .label('Student ID')
+      .messages({
+        'string.min': 'Student ID must be valid.',
+        'string.max': 'Student ID must be valid.',
+        'any.required': 'Student ID is required.',
+      }),
+  }),
 }

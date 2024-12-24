@@ -36,10 +36,6 @@ jobs:
       - name: Login to Heroku
         run: echo "${{ secrets.HEROKU_API_KEY }}" | heroku login --with-token
 
-      # 7. Create (or check) Heroku app
-      - name: Create Heroku App
-        run: |
-          heroku apps:info -a ${{ secrets.HEROKU_APP_NAME }} || heroku create ${{ secrets.HEROKU_APP_NAME }}
 
       # 8. Set Heroku config vars
       - name: Set Heroku config vars
@@ -62,10 +58,10 @@ jobs:
             LONG_TOKEN_SECRET=${{ secrets.LONG_TOKEN_SECRET }} \
             SHORT_TOKEN_SECRET=${{ secrets.SHORT_TOKEN_SECRET }} \
             NACL_SECRET=${{ secrets.NACL_SECRET }} \
-            -a ${{ secrets.HEROKU_APP_NAME }}
+            -a almadrasa-api
 
       # 9. Deploy to Heroku
       - name: Deploy to Heroku
         run: |
-          heroku git:remote -a ${{ secrets.HEROKU_APP_NAME }}
+          heroku git:remote -a almadrasa-api
           git push heroku HEAD:main -f
